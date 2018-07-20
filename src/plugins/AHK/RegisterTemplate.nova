@@ -1,0 +1,17 @@
+[METADATA]
+window_x:=100
+window_y:=200
+window_z:=300
+window_1:=400
+window_2:="Sup"
+[/METADATA]
+
+#Include *i randomName.ahk
+#Include *i loadChecker.ahk
+
+password      = Asdfgh12345^
+operaWindow   = Create your Google Account - Opera
+controlWindow = Intermediate D3D Window1
+
+;show the GUI and determine the size
+Gui, Show, [$WINDOWX] [$WINDOWY] w450 h100, Register Script
