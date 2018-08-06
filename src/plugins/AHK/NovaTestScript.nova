@@ -1,8 +1,0 @@
-[METADATA]
-ONE:=1
-THREE:=3
-TWO:=2
-[/METADATA]
-
-Test line [$ONE]
-Test line [$TWO] and [$THREE]
