@@ -110,7 +110,8 @@ class ScribbleArea(QWidget):
             self.drawLineTo(event.pos())
             self.scribbling = False
             self.endTime = time.time()
-            print(self.speed())
+            print("Speed: " + str(self.speed()))
+            print("Time: " + str(self.time()))
 
     def speed(self):
         dx = self.startPoint.x() - self.endPoint.x()
@@ -119,12 +120,15 @@ class ScribbleArea(QWidget):
         time = self.endTime - self.startTime
         return distance / time
 
+    def time(self):
+        time = self.endTime - self.startTime
+        return time % 60
+
     def paintEvent(self, event):
         painter = QPainter(self)
         dirtyRect = event.rect()
         painter.drawImage(dirtyRect, self.image, dirtyRect)
 
-        self.drawPoint(painter)
         self.drawPoint(painter)
 
     def drawPoint(self, painter):
@@ -137,14 +141,13 @@ class ScribbleArea(QWidget):
 
     def getRandPoints(self):
         geometry = self.parent().size()
+
         x1 = randint(0, geometry.width())
         y1 = randint(0, geometry.height())
-
         self.startPoint = QPoint(x1, y1)
 
         x2 = randint(0, geometry.width())
         y2 = randint(0, geometry.height())
-
         self.endPoint = QPoint(x2, y2)
 
     def resizeEvent(self, event):
