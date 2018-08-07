@@ -122,7 +122,7 @@ class ScribbleArea(QWidget):
 
     def time(self):
         time = self.endTime - self.startTime
-        return time % 60
+        return time
 
     def paintEvent(self, event):
         painter = QPainter(self)
