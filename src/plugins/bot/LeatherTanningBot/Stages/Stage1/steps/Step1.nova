@@ -1,0 +1,13 @@
+[METADATA]
+    BANKER   = "../ASSETS/BANKER.PNG"
+    D'HIDE   = "../ASSETS/D'HIDE.PNG"
+    ACCOUNTS = "../ASSETS/ACCOUNTS/"
+[/METADATA]
+
+=======================================================
+
+1 FIND(BANKER)
+2 CLICK(BANKER, MOUSE.RIGHT)
+3 FIND(D'HIDE)
+4 CLICK(D'HIDE | MOUSE.RIGHT)
+5 CLICK(WITHDRAW)

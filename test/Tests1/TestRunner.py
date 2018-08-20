@@ -1,4 +1,4 @@
-from lib.IrisImageUtils.Shapes.ShapeDetection import *
+from IrisImageUtils.Shapes.ShapeDetection import *
 from src.base.objs.CascadeObject.CascadeObject import CascadeObject
 from src.base.objs.DepthPerception import DepthPerception
 from src.base.objs.Drawable import Drawable

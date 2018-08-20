@@ -1,8 +1,12 @@
 [METADATA]
-ONE:=1
-THREE:=3
-TWO:=2
+    WIDTH:=545
+    HEIGHT:=600
+    pos=4
 [/METADATA]
+=======================================================
 
-Test line [$ONE]
-Test line [$TWO] and [$THREE]
+1 EXECUTE(step1.nova)
+2
+3
+4
+5

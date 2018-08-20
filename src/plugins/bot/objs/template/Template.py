@@ -1,9 +1,76 @@
+import re
+import os
 import imutils
 import numpy as np
 import cv2
-
 from RSEnterprise.src.base.overlay.point.Point import Point
-from RSEnterprise.src.plugins.bot.objs.template.Template import Template
+
+
+class Template:
+
+    @staticmethod
+    def fromPath(path, label=""):
+        assert os.path.exists(path), "ERROR: Can't create Template from non-existent file: " + os.path.abspath(path)
+        # File name regular expression.
+        regex = r'(.*/)?(.*).png'
+        match = re.match(regex, path, re.I)
+        name = match.groups()[-1]
+
+        if not label:
+            label = name
+
+        image = cv2.imread(path)
+        return Template(image, label, path)
+
+    @staticmethod
+    def fromImage(image, label=""):
+        assert image is not None, "ERROR: Can't load template from blank image. : " + label
+        return Template(image, label)
+
+    def __init__(self, image=None, label="", path=""):
+        self.image = image
+        self.label = label
+        self.path  = path
+
+    def match(self, other, thresh=0.75, multiscale=True):
+        return TemplateMatcher.matchTemplate(self, other, thresh, multiscale)
+
+    def contains(self, other, thresh=0.75, multiscale=True):
+        return len( self.match(other, thresh, multiscale) ) > 0
+
+    def load(self, path):
+        self.path = path
+        self.image = cv2.imread(path)
+        assert self.image != None, "Image cannot be loaded: " + path
+
+    def getImage(self):
+        return self.image.copy()
+
+    def grayscale(self):
+        if len( self.image.shape ) > 2:
+            return cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
+        return self.image.copy()
+
+    def getAbsolutePath(self):
+        return os.path.abspath(self.path)
+
+    def getTemplateName(self):
+
+        if not self.path:
+            return ""
+
+        # File name regular expression.
+        regex = r'(.*/)?(.*).png'
+        match = re.match(regex, self.path,  re.I)
+        filename = match.groups()[-1]
+        return filename if filename else self.path
+
+    def getTemplatePath(self):
+        # File path regular expression.
+        regex = r'(.*/)?(.*).png'
+        match = re.match(regex, self.path, re.I)
+        filepath = match.groups()[0]
+        return filepath if filepath else self.path
 
 class TemplateMatcher:
 
@@ -74,34 +141,3 @@ class TemplateMatcher:
             if result:
                 matches.append( ( item, result ) )
         return matches
-
-
-def draw(template, positives, name):
-    img = template.image
-    print("Positives")
-    print(positives)
-
-    for detections in positives:
-        (point1, point2) = detections
-        cv2.rectangle(img, (point1.x, point1.y), (point2.x, point2.y), (0, 0, 255), 2)
-        cv2.putText(img, name, (point1.x, point1.y), 1, 1, (255, 255, 255))
-
-    # cv2.rectangle(img, (p1.x, p1.y), (p2.x, p2.y), (0, 0, 255), 2)
-
-    cv2.imshow(template.getTemplateName(), img)
-
-    cv2.waitKey(0)
-tm = TemplateMatcher()
-
-img1 = cv2.imread("leather.png")
-img2 = cv2.imread("inventory.png")
-source = Template.fromImage(img2, "inventory.png")
-target = Template.fromImage(img1, "Leather.png")
-
-r1 = tm.matchTemplate(source, target, multiscale=False)
-draw (source, r1, target.getTemplateName())
-print("\n")
-# r2 = tm.findTemplate([t2], t1)
-# draw (t1, r2)
-
-

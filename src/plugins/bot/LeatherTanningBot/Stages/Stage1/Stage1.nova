@@ -1,0 +1,13 @@
+[METADATA]
+    WIDTH:=700-750
+    HEIGHT:=250
+    POS:=4
+[/METADATA]
+
+=======================================================
+
+1 RUN(step1.nova)
+2 RUN(step2.nova)
+3 RUN(step3.nova)
+4 RUN(step4.nova)
+5 RUN(step5.nova)
