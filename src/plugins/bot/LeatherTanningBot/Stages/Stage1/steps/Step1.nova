@@ -2,6 +2,7 @@
     BANKER   = "../ASSETS/BANKER.PNG"
     D'HIDE   = "../ASSETS/D'HIDE.PNG"
     ACCOUNTS = "../ASSETS/ACCOUNTS/"
+    MAX_NUM_BOTS = 10
 [/METADATA]
 
 =======================================================

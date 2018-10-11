@@ -141,3 +141,4 @@ class TemplateMatcher:
             if result:
                 matches.append( ( item, result ) )
         return matches
+

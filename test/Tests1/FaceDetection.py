@@ -1,7 +1,6 @@
 import os
 import cv2
 
-from src.base.overlay.container.Container import Container
 
 cascPath = "../../assets/cascades/haarcascade_frontalface_default.xml"
 
@@ -41,9 +40,19 @@ while True:
 
         face = frame[y: y + h, x: x + w]
 
+    edges = cv2.Canny(frame, 10, 300)
+    edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
+    ret, thresh = cv2.threshold(gray, 127, 255, 0)
+    im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    im2 = cv2.drawContours(im2, contours, -1, (0, 255, 0), 3)
+    cv2.imshow("contours", im2)
+    # edges.setTo((255, 0, 255), edges != 0);
 
     cv2.imshow('Normal Video', frame)
+    cv2.imshow('canny', edges)
+
+
 
 
 
