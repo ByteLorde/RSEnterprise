@@ -21,20 +21,20 @@ class Line:
         self.thickness = thickness
         self.updateEndpoint()
 
-    #     cv2.namedWindow("Line")
-    #     cv2.createTrackbar('P1 X', 'Line', 0, 500, self.update)
-    #     cv2.createTrackbar('P1 Y', 'Line', 0, 500, self.update)
-    #
-    #     cv2.createTrackbar('Length', 'Line', 0, 500, self.update)
-    #     cv2.createTrackbar('Angle', 'Line', 0, 360, self.update)
-    #
-    # def update(self, x):
-    #     self.origin.x = cv2.getTrackbarPos('P1 X', 'Line')
-    #
-    #     self.origin.y = cv2.getTrackbarPos('P1 Y', 'Line')
-    #
-    #     self.setLength(cv2.getTrackbarPos("Length", "Line"))
-    #     self.setAngle(cv2.getTrackbarPos("Angle", "Line"))
+        cv2.namedWindow("Line")
+        cv2.createTrackbar('P1 X', 'Line', 0, 500, self.update)
+        cv2.createTrackbar('P1 Y', 'Line', 0, 500, self.update)
+
+        cv2.createTrackbar('Length', 'Line', 0, 500, self.update)
+        cv2.createTrackbar('Angle', 'Line', 0, 360, self.update)
+
+    def update(self, x):
+        self.origin.x = cv2.getTrackbarPos('P1 X', 'Line')
+
+        self.origin.y = cv2.getTrackbarPos('P1 Y', 'Line')
+
+        self.setLength(cv2.getTrackbarPos("Length", "Line"))
+        self.setAngle(cv2.getTrackbarPos("Angle", "Line"))
 
 
     def x(self):
@@ -88,19 +88,19 @@ class Line:
         return Line(self.origin, self.length, self.angle, self.lineType, self.thickness, self.color)
 
 
-# img = np.zeros((1000,1000,3), np.uint8)
-# line = Line(Point(50, 50))
-#
-# while(1):
-#     img = np.zeros((1000, 1000, 3), np.uint8)
-#
-#     line.draw(img)
-#     cv2.imshow('image', img)
-#     k = cv2.waitKey(1) & 0xFF
-#
-#
-#     if k == 27:
-#         break
-#
-#
-# cv2.destroyAllWindows()
+img = np.zeros((1000,1000,3), np.uint8)
+line = Line(Point(50, 50))
+
+while(1):
+    img = np.zeros((1000, 1000, 3), np.uint8)
+
+    line.draw(img)
+    cv2.imshow('image', img)
+    k = cv2.waitKey(1) & 0xFF
+
+
+    if k == 27:
+        break
+
+
+cv2.destroyAllWindows()

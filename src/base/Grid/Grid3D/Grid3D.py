@@ -3,29 +3,45 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 from src.base.objs.DepthPerception.DepthPerception import DepthPerception
 from src.base.objs.modules.ContourDetection import ContourDetection
 from src.base.objs.modules.Threshold.Threshold import Threshold
+from src.plugins.Bot.objs.template.Template import Template
 
 
 class Grid3D:
 
-    def __init__(self, data, title="3D Scatter Plot"):
-        self.data   = data
-        self.figure = plt.figure()
-        self.axis   = p3.Axes3D(self.figure)
+    def __init__(self, x, y, z, image, title="3D Scatter Plot"):
+        t = Template.fromImage(image)
 
-        self.setAxisLengths()
+        t.setImage(t.resize(100, 100))
 
-        self.axis.set_title(title)
+        # create the x and y coordinate arrays (here we just use pixel indices)
+        lena = t.getImage()
 
-    def show(self):
+        xx, yy = np.mgrid[0:t.getImage().shape[0], 0:t.getImage().shape[1]]
+        print(len(xx))
+        print(len(yy))
+        # create the figure
+        fig = plt.figure()
 
-        self.axis.scatter(self.data[0], self.data[1], self.data[2], marker="*")
+
+        ax = fig.gca(projection='3d')
 
 
+        # ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+        ax.plot_surface(xx, yy, lena, rstride=1, cstride=1, cmap=plt.cm.coolwarm,
+                        linewidth=0, vmin=0.0, vmax=0.5)
+
+        ax.view_init(90, 1)
+        # show it
         plt.show()
+    def show(self):
+        pass
 
     def setAxisLengths(self):
 
@@ -33,9 +49,7 @@ class Grid3D:
         domain = 1024
         range  = 1024
 
-        print("Depth:" , depth)
-        print("Domain:", domain)
-        print("Range:" , range)
+
 
         self.axis.set_zlim3d([0.0, depth])
         self.axis.set_zlabel('Z')
@@ -66,8 +80,8 @@ class Grid3D:
 
 def main():
 
-    image = cv2.imread("C:/Users/Validation/Workspace/Iris/assets/faces/s1/Disparity_Image.png", 0)
-    print(image)
+    image = cv2.imread("C:/Users/Syndicate/Workspace/RSEnterprise/assets/faces/s1/3d-ultrasound-baby-image.jpg", 0)
+    # print(image)
     detector = ContourDetection.ContourDetection()
 
     maxVal = max(image.shape[0], image.shape[1])
@@ -79,12 +93,13 @@ def main():
     y = [ ]
     z = [ ]
 
-    for yVal in range(0,len(image),2):
-        for xVal in range(0,len(image[1]), 2):
+    for yVal in range(0,len(image),1):
+        for xVal in range(0,len(image[1]), 1):
 
             x.append(xVal)
             y.append(yVal)
-            z.append(image[yVal][xVal])
+            val = image[yVal][xVal] // 8
+            image[yVal][xVal] = val
 
 
 
@@ -125,7 +140,7 @@ def main():
     # if cv2.waitKey(100000) & 0xFF == ord('q'):
     #     exit(1)
 
-    grid = Grid3D(data)
+    grid = Grid3D(x, y, z, image)
     grid.show()
 
 
@@ -162,7 +177,7 @@ def generateAHKFunc(min, max):
 
     fh = open("script2.ahk", "w")
     for line in script:
-        fh.write(line + "\n")
+        fh.write(line + "/n")
     fh.close()
 
 # generateAHKFunc(51, 101)

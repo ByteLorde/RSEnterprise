@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-from RSEnterprise.src.plugins.bot.objs.template.Template import Template
+from src.plugins.Bot.objs.template.Template import Template
 
 
 class Threshold:
@@ -46,7 +46,7 @@ class Threshold:
     """
     @staticmethod
     def otsu(template, type=BINARY):
-        calculated_min, result = cv2.threshold(template.grayscale(), 0, 255, type | Threshold.OTSU)
+        calculated_min, result = cv2.threshold(template.grayscale().getImage(), 0, 255, type | Threshold.OTSU)
         return result
 
     """
@@ -62,7 +62,7 @@ class Threshold:
     """
     @staticmethod
     def threshold(template, min=DEFAULT_MIN, max=DEFAULT_MAX, type=BINARY):
-        _, result = cv2.threshold(template.grayscale(), min, max, type)
+        _, result = cv2.threshold(template.grayscale().getImage(), min, max, type)
         return result
 
 
@@ -77,7 +77,7 @@ class Threshold:
     """
     @staticmethod
     def adaptiveThreshold(template, color=DEFAULT_COLOR, method=ADAPTIVE_MEAN, type=BINARY, blocksize=ADAPTIVE_BLOCK_SIZE, constant=ADAPTIVE_CONSTANT):
-        r = cv2.adaptiveThreshold(template.grayscale(), color, method, type, blocksize, constant)
+        r = cv2.adaptiveThreshold(template.grayscale().getImage(), color, method, type, blocksize, constant)
 
         return r
     #
@@ -138,7 +138,6 @@ if __name__ == "__main__":
         #
         # testTemplate = Template.fromImage(frame, "Cam")
         testTemplate = Template.fromPath("book.png")
-
         normal_thresh = Threshold.threshold(testTemplate, test_min, test_color, test_type)
         adaptive_thresh = Threshold.adaptiveThreshold(testTemplate, test_color, test_method, test_type)
         otsu_thesh = Threshold.otsu(testTemplate, test_type)

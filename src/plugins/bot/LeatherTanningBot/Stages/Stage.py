@@ -1,7 +1,8 @@
 import cv2
 import os
-from RSEnterprise.src.base.objs.TemplateMatcher.TemplateMatcher import TemplateMatcher
-from RSEnterprise.src.plugins.bot.objs.template.Template import Template
+
+from src.plugins.Bot.objs.template.Template import Template
+
 
 class Stage:
 

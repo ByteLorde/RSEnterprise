@@ -1,22 +1,22 @@
 import re
 import os
-import imutils
 import numpy as np
 import cv2
-from RSEnterprise.src.base.overlay.point.Point import Point
 
+from src.base.overlay.point.Point import Point
 
 class Template:
 
     @staticmethod
     def fromPath(path, label=""):
         assert os.path.exists(path), "ERROR: Can't create Template from non-existent file: " + os.path.abspath(path)
-        # File name regular expression.
-        regex = r'(.*/)?(.*).png'
-        match = re.match(regex, path, re.I)
-        name = match.groups()[-1]
 
         if not label:
+            # File name regular expression.
+            regex = r'(.*/)?(.*).png'
+            match = re.match(regex, path, re.I)
+            name = match.groups()[-1]
+
             label = name
 
         image = cv2.imread(path)
@@ -27,16 +27,23 @@ class Template:
         assert image is not None, "ERROR: Can't load template from blank image. : " + label
         return Template(image, label)
 
+    @staticmethod
+    def copy(other):
+        return Template(other.image, other.label, other.path)
+
     def __init__(self, image=None, label="", path=""):
         self.image = image
         self.label = label
         self.path  = path
 
-    def match(self, other, thresh=0.75, multiscale=True):
+    def find(self, other, thresh=0.75, multiscale=False):
         return TemplateMatcher.matchTemplate(self, other, thresh, multiscale)
 
-    def contains(self, other, thresh=0.75, multiscale=True):
-        return len( self.match(other, thresh, multiscale) ) > 0
+    def matchAll(self, other, thresh=0.75, multiscale=False):
+        return TemplateMatcher.matchTemplate(self, other, thresh, multiscale)
+
+    def contains(self, other, thresh=0.75, multiscale=False):
+        return len( self.find(other, thresh, multiscale) ) > 0
 
     def load(self, path):
         self.path = path
@@ -46,10 +53,14 @@ class Template:
     def getImage(self):
         return self.image.copy()
 
+    def setImage(self, image):
+        self.image = image
+
     def grayscale(self):
         if len( self.image.shape ) > 2:
-            return cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
-        return self.image.copy()
+            grayscaled = cv2.cvtColor(self.image.copy(), cv2.COLOR_BGR2GRAY)
+            return Template.fromImage(grayscaled, self.label)
+        return self
 
     def getAbsolutePath(self):
         return os.path.abspath(self.path)
@@ -65,6 +76,22 @@ class Template:
         filename = match.groups()[-1]
         return filename if filename else self.path
 
+    def show(self, title=""):
+        assert self.image is not None, "Cannot show Template with no image!"
+        if not title:
+            title = self.label
+        cv2.imshow(title, self.image)
+        if cv2.waitKey(10000) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            exit(1)
+
+    def draw(self, points, color=(255, 0, 0), thickness=2):
+
+        for pointset in points:
+            start = pointset[0]
+            end   = pointset[1]
+            cv2.rectangle(self.image, (start.x, start.y), (end.x, end.y), color, thickness)
+
     def getTemplatePath(self):
         # File path regular expression.
         regex = r'(.*/)?(.*).png'
@@ -72,66 +99,59 @@ class Template:
         filepath = match.groups()[0]
         return filepath if filepath else self.path
 
+    def scale(self, percent):
+        assert self.image is not None, "Cannot resize Template with no image!"
+
+        width = int(self.image.shape[1] * percent )
+        height = int(self.image.shape[0] * percent )
+        dims = (width, height)
+
+        return cv2.resize(self.image, dims, interpolation=cv2.INTER_AREA)
+
+    def resize(self, width=None, height=None):
+        assert self.image is not None, "Cannot resize Template with no image!"
+
+        width  = width  if width  else self.getWidth()
+        height = height if height else self.getHeight()
+        dims = (width, height)
+
+        return cv2.resize(self.image, dims, interpolation=cv2.INTER_AREA)
+
+    def getHeight(self):
+        return self.image.shape[0]
+
+    def setHeight(self, height):
+        width = self.getWidth()
+        dims = (width, height)
+        return cv2.resize(self.image, dims, interpolation=cv2.INTER_AREA)
+
+    def getWidth(self):
+        return self.image.shape[1]
+
+    def setWidth(self, width):
+        height = self.getHeight()
+        dims = (width, height)
+        return cv2.resize(self.image, dims, interpolation=cv2.INTER_AREA)
+
 class TemplateMatcher:
 
     @staticmethod
-    def matchTemplate(source, target, threshold=0.8, multiscale=True):
+    def matchTemplate(source, target, threshold=0.8, multiscale=False):
 
-        sourceImage = source.grayscale()
-        targetImage = target.grayscale()
+        sourceImage = source.grayscale().getImage()
+        targetImage = target.grayscale().getImage()
+        w, h = target.getWidth(), target.getHeight()
 
-        sourceCanny = cv2.Canny(sourceImage, 50, 200)
-        targetCanny = cv2.Canny(targetImage, 50, 200)
+        res = cv2.matchTemplate(sourceImage, targetImage, cv2.TM_CCOEFF_NORMED)
+        loc = np.where(res >= threshold)
 
-        (sourceHeight, sourceWidth) = sourceCanny.shape[:2]
-        (targetHeight, targetWidth) = targetCanny.shape[:2]
+        matches = []
+        for pt in zip(*loc[::-1]):
+            start = Point(pt[0], pt[1])
+            end   = Point(pt[0] + w, pt[1] + h)
+            matches.append((start, end))
 
-        cv2.imshow("Source", sourceImage)
-        cv2.imshow("Target", targetImage)
-
-        positives = []
-
-        if multiscale:
-            for scale in np.linspace(0.2, 1.0, 20)[::-1]:
-
-                resizedImage = imutils.resize(targetImage, width=int(targetWidth * scale))
-                (resizedHeight, resizedWidth) = resizedImage.shape[:2]
-
-                r = targetWidth / float(resizedWidth)
-
-                if resizedHeight < targetHeight or resizedWidth < targetWidth:
-                    break
-
-                resizedTemplate = Template(resizedImage, "")
-                matches  = TemplateMatcher.matchTemplate(source, resizedTemplate, multiscale=False)
-
-                # We must scale the endpoint by the r value for points found doing multiscale matching
-                for match in matches:
-                    startpoint = match[0]
-                    endpoint   = match[1]
-                    startpoint.x *= r
-                    startpoint.y *= r
-                    endpoint.x   *= r
-                    endpoint.y   *= r
-                    positives += ( startpoint, endpoint )
-
-        result = cv2.matchTemplate(sourceCanny, targetCanny, cv2.TM_CCOEFF)
-
-        (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
-
-        if maxVal < threshold:
-            return positives
-
-        (startX, startY) = (int(maxLoc[0]), int(maxLoc[1]))
-        (endX,   endY)   = (int((maxLoc[0] + targetWidth)), int((maxLoc[1] + targetHeight)))
-
-        startPoint = Point(startX, startY)
-        endPoint   = Point(endX, endY)
-
-        points = ( startPoint, endPoint )
-        positives.append(points)
-
-        return positives
+        return matches
 
     @staticmethod
     def findTemplate(templates, template, threshold=.75, multiscale=False):
@@ -139,6 +159,16 @@ class TemplateMatcher:
         for item in templates:
             result = TemplateMatcher.matchTemplate(item, template, threshold, multiscale)
             if result:
-                matches.append( ( item, result ) )
+                matches.append( (item, result) )
         return matches
+
+if __name__ == "__main__":
+    template1 = Template.fromPath("./assets/inventory.png")
+    # grayed = Template.fromImage(template1.grayscale())
+    # grayed.show()
+
+    template2 = Template.fromPath("./assets/leather.png")
+    matches = template1.find(template2, thresh=.50)
+    template1.draw(matches)
+    template1.show()
 
