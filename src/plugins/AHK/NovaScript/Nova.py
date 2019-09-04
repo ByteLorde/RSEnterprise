@@ -1,4 +1,0 @@
-
-
-class Nova:
-    pass

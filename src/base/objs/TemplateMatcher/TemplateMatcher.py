@@ -2,8 +2,8 @@ import imutils
 import numpy as np
 import cv2
 
-from RSEnterprise.src.base.overlay.point.Point import Point
-from RSEnterprise.src.plugins.bot.objs.template.Template import Template
+from src.base.objs.template.Template import Template
+from src.base.modules.Drawable.point.Point import Point
 
 class TemplateMatcher:
 
